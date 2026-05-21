@@ -1,0 +1,57 @@
+UserManegerInitial.java:11: error: class UserManegerInicial is public, should be declared in a file named UserManegerInicial.java
+public class UserManegerInicial {
+       ^
+UserManegerInitial.java:35: error: cannot find symbol
+            users[i] = reader.readerLine();
+                             ^
+  symbol:   method readerLine()
+  location: variable reader of type BufferedReader
+UserManegerInitial.java:50: error: for-each not applicable to expression type
+        for(String users: users) {
+                          ^
+  required: array or java.lang.Iterable
+  found:    String
+UserManegerInitial.java:50: error: variable users is already defined in method login(String,String)
+        for(String users: users) {
+                   ^
+UserManegerInitial.java:74: error: cannot find symbol
+        for (String line : userLines) {
+                           ^
+  symbol:   variable userLines
+  location: class UserManegerInicial
+UserManegerInitial.java:96: error: cannot find symbol
+        for (int i = 0; i < userLines.length; i++) {
+                            ^
+  symbol:   variable userLines
+  location: class UserManegerInicial
+UserManegerInitial.java:97: error: cannot find symbol
+            String[] parts = userLines[i].split(";");
+                             ^
+  symbol:   variable userLines
+  location: class UserManegerInicial
+UserManegerInitial.java:101: error: cannot find symbol
+                userLines[i] = userId + ";" + newName + ";" + newPassword;
+                ^
+  symbol:   variable userLines
+  location: class UserManegerInicial
+UserManegerInitial.java:102: error: cannot find symbol
+                System.out.println("Dados atualizados na memória: " + userLines[i]);
+                                                                      ^
+  symbol:   variable userLines
+  location: class UserManegerInicial
+UserManegerInitial.java:106: error: cannot find symbol
+        writer.close();  
+        ^
+  symbol:   variable writer
+  location: class UserManegerInicial
+UserManegerInitial.java:114: error: cannot find symbol
+        if (userLines == null) {
+            ^
+  symbol:   variable userLines
+  location: class UserManegerInicial
+UserManegerInitial.java:118: error: cannot find symbol
+        for (String line : userLines) {
+                           ^
+  symbol:   variable userLines
+  location: class UserManegerInicial
+12 errors
