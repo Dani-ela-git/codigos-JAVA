@@ -1,0 +1,534 @@
+SCC0204 - Exercício 15
+Bruna Romero - 11913896
+Daniela Costa da Silva - 14613625
+Data: 28/05/2026
+
+
+================================================================================
+
+COMPARAÇÃO ENTRE CÓDIGO GERADO POR IA (DEEPSEEK) E CÓDIGO IMPLEMENTADO
+================================================================================
+
+PARTE 1: VISÃO GERAL DA ABORDAGEM
+--------------------------------------------------------------------------------
+
+| Aspecto                    | Código da IA (DeepSeek)     | Código Implementado          |
+|----------------------------|-----------------------------|------------------------------|
+| Complexidade               | Mais robusta e defensiva    | Mais simples e direta        |
+| Linhas de código (MagicShop)| ~250 linhas                 | ~120 linhas                  |
+| Uso de bibliotecas         | BigDecimal, Optional, Stream| HashMap, ArrayList           |
+| Estilo de programação      | Funcional + Orientado a obj | Orientado a objetos básico   |
+
+
+PARTE 2: COMPARAÇÃO DETALHADA - CLASSE MAGICSHOP
+--------------------------------------------------------------------------------
+
+2.1 ESTRUTURA E ATRIBUTOS
+
+CÓDIGO DA IA (DeepSeek):
+--------------------------------------------------
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class MagicShop {
+    private final Map<String, Item> catalog;  // Imutável
+    private final List<Item> playerInventory;
+    private final BigDecimal DEPRECIATION_RATE = new BigDecimal("0.5");
+    
+    public MagicShop() {
+        this.catalog = new HashMap<>();
+        this.playerInventory = new ArrayList<>();
+        initializeCatalog();
+    }
+    
+    private void initializeCatalog() {
+        catalog.put("Magic Potion", new Item("Magic Potion", new BigDecimal("50.00")));
+        catalog.put("Steel Sword", new Item("Steel Sword", new BigDecimal("200.00")));
+        catalog.put("Golden Key", new Item("Golden Key", new BigDecimal("150.00")));
+        catalog.put("Health Elixir", new Item("Health Elixir", new BigDecimal("30.00")));
+        catalog.put("Invisibility Cloak", new Item("Invisibility Cloak", new BigDecimal("500.00")));
+    }
+}
+
+CÓDIGO IMPLEMENTADO:
+--------------------------------------------------
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class MagicShop {
+    private HashMap<String, Double> itemsForSale;
+    private ArrayList<Item> playerInventory;
+    
+    public MagicShop() {
+        itemsForSale = new HashMap<>();
+        playerInventory = new ArrayList<>();
+        
+        itemsForSale.put("Magic Potion", 50.0);
+        itemsForSale.put("Steel Sword", 200.0);
+        itemsForSale.put("Golden Key", 150.0);
+        itemsForSale.put("Health Elixir", 30.0);
+        itemsForSale.put("Invisibility Cloak", 500.0);
+    }
+}
+
+DIFERENÇAS PRINCIPAIS:
+• IA usa 'final' para evitar modificações acidentais
+• IA separa inicialização em método próprio (melhor prática)
+• IA cria Item com preço (mais coeso)
+• Nosso código é mais direto (fácil para iniciantes)
+
+
+2.2 MÉTODO buyItem() - COMPARAÇÃO COMPLETA
+
+CÓDIGO DA IA (DeepSeek):
+--------------------------------------------------
+/**
+ * Purchases an item from the magic shop.
+ *
+ * @param itemName the name of the item to purchase (case-sensitive)
+ * @param bankAccount the player's bank account for debit
+ * @return Optional containing true if purchase succeeded, empty if failed
+ *
+ * @pre itemName != null && !itemName.trim().isEmpty()
+ * @pre bankAccount != null
+ * @pre catalog.containsKey(itemName)
+ * @pre bankAccount.getBalance().compareTo(catalog.get(itemName).getPrice()) >= 0
+ *
+ * @post If successful: playerInventory contains the new item
+ * @post If successful: bankAccount balance decreased by item price
+ * @post No side effects if purchase fails
+ */
+public Optional<Boolean> buyItem(String itemName, BankAccount bankAccount) {
+    if (itemName == null || itemName.trim().isEmpty()) {
+        System.err.println("Precondition violated: itemName cannot be null or empty");
+        return Optional.empty();
+    }
+    
+    if (bankAccount == null) {
+        System.err.println("Precondition violated: bankAccount cannot be null");
+        return Optional.empty();
+    }
+    
+    Item item = catalog.get(itemName);
+    if (item == null) {
+        System.out.println("Item not available: " + itemName);
+        return Optional.empty();
+    }
+    
+    BigDecimal price = item.getPrice();
+    
+    if (bankAccount.withdraw(price)) {
+        playerInventory.add(item);
+        System.out.printf("✓ Purchased %s for R$ %.2f%n", itemName, price);
+        return Optional.of(true);
+    }
+    
+    return Optional.empty();
+}
+
+CÓDIGO IMPLEMENTADO:
+--------------------------------------------------
+/**
+ * Compra um item da loja, debitando o valor da conta bancária do jogador.
+ * 
+ * @param itemName Nome do item a ser comprado.
+ * @param bankAccount Conta bancária do jogador para débito.
+ * @return true se a compra foi realizada com sucesso, false caso contrário.
+ */
+public boolean buyItem(String itemName, BankAccount bankAccount) {
+    if (itemName == null || bankAccount == null) {
+        System.out.println("Invalid transaction.");
+        return false;
+    }
+    
+    if (!itemsForSale.containsKey(itemName)) {
+        System.out.println("Item not found in shop: " + itemName);
+        return false;
+    }
+    
+    double price = itemsForSale.get(itemName);
+    
+    if (bankAccount.withdraw(price)) {
+        playerInventory.add(new Item(itemName));
+        System.out.printf("You bought %s for R$ %.2f!\n", itemName, price);
+        return true;
+    }
+    
+    return false;
+}
+
+ANÁLISE DAS DIFERENÇAS:
+--------------------------------------------------
+| Característica              | IA (DeepSeek)    | Nosso Código    | Melhor      |
+|-----------------------------|------------------|-----------------|-------------|
+| Retorno                     | Optional<Boolean>| boolean         | IA          |
+| Validação de string vazia   | Sim (trim)       | Não             | IA          |
+| Mensagens de erro           | System.err       | System.out      | IA          |
+| Uso de formatação           | printf com %n    | printf com \n   | IA          |
+| Criação de Item             | Reusa do catálogo| Cria novo       | IA          |
+
+
+2.3 MÉTODO sellItem() - COMPARAÇÃO
+
+CÓDIGO DA IA (DeepSeek):
+--------------------------------------------------
+public Optional<Boolean> sellItem(String itemName, BankAccount bankAccount) {
+    if (itemName == null || itemName.trim().isEmpty()) {
+        return Optional.empty();
+    }
+    
+    // Busca case-insensitive (melhor UX)
+    Item itemToSell = playerInventory.stream()
+        .filter(item -> item.getName().equalsIgnoreCase(itemName))
+        .findFirst()
+        .orElse(null);
+    
+    if (itemToSell == null) {
+        System.out.println("Item not found in inventory: " + itemName);
+        return Optional.empty();
+    }
+    
+    Item catalogItem = catalog.get(itemToSell.getName());
+    if (catalogItem == null) {
+        System.out.println("Shop does not buy this item.");
+        return Optional.empty();
+    }
+    
+    BigDecimal sellPrice = catalogItem.getPrice()
+        .multiply(DEPRECIATION_RATE)
+        .setScale(2, RoundingMode.HALF_EVEN);
+    
+    playerInventory.remove(itemToSell);
+    bankAccount.deposit(sellPrice);
+    
+    System.out.printf("✓ Sold %s for R$ %.2f (50%% depreciation)%n", 
+                      itemName, sellPrice);
+    return Optional.of(true);
+}
+
+CÓDIGO IMPLEMENTADO:
+--------------------------------------------------
+public boolean sellItem(String itemName, BankAccount bankAccount) {
+    if (itemName == null || bankAccount == null) {
+        System.out.println("Invalid transaction.");
+        return false;
+    }
+    
+    Item itemToSell = null;
+    for (Item item : playerInventory) {
+        if (item.getName().equalsIgnoreCase(itemName)) {
+            itemToSell = item;
+            break;
+        }
+    }
+    
+    if (itemToSell == null) {
+        System.out.println("You don't have that item: " + itemName);
+        return false;
+    }
+    
+    if (!itemsForSale.containsKey(itemName)) {
+        System.out.println("Shop doesn't buy this item.");
+        return false;
+    }
+    
+    double originalPrice = itemsForSale.get(itemName);
+    double sellPrice = originalPrice * 0.5;
+    
+    playerInventory.remove(itemToSell);
+    bankAccount.deposit(sellPrice);
+    System.out.printf("You sold %s for R$ %.2f (50%% of original price).\n", 
+                      itemName, sellPrice);
+    return true;
+}
+
+DIFERENÇAS SIGNIFICATIVAS:
+--------------------------------------------------
+| Aspecto                    | IA                       | Nosso                      |
+|----------------------------|--------------------------|----------------------------|
+| Busca de item              | Stream API (funcional)   | Loop for (imperativo)      |
+| Arredondamento             | RoundingMode.HALF_EVEN   | Nenhum                     |
+| Depreciação                | Constante (0.5)          | Número mágico (0.5)        |
+| Escala monetária           | setScale(2)              | Nenhum                     |
+
+
+2.4 MÉTODO listItems() - COMPARAÇÃO
+
+CÓDIGO DA IA (DeepSeek):
+--------------------------------------------------
+public void listItems() {
+    if (catalog.isEmpty()) {
+        System.out.println("The shop is temporarily closed.");
+        return;
+    }
+    
+    System.out.println("\n✦✦✦ ZUIL'S MAGIC SHOP ✦✦✦");
+    System.out.println("┌─────────────────────────────┐");
+    
+    // Ordena por preço para melhor UX
+    catalog.values().stream()
+        .sorted(Comparator.comparing(Item::getPrice))
+        .forEach(item -> {
+            System.out.printf("│ %-20s R$ %6.2f │%n", 
+                              item.getName(), item.getPrice());
+        });
+    
+    System.out.println("└─────────────────────────────┘");
+}
+
+CÓDIGO IMPLEMENTADO:
+--------------------------------------------------
+public void listItems() {
+    if (itemsForSale.isEmpty()) {
+        System.out.println("The shop has no items for sale.");
+        return;
+    }
+    System.out.println("\n=== Zuil's Magic Shop ===");
+    System.out.println("Items available:");
+    for (String itemName : itemsForSale.keySet()) {
+        System.out.printf("- %s: R$ %.2f\n", itemName, itemsForSale.get(itemName));
+    }
+}
+
+ANÁLISE:
+• IA ordena por preço (melhor experiência do usuário)
+• IA usa formatação visual elaborada
+• IA é mais difícil de modificar (bordas hardcoded)
+• Nosso código é mais simples e direto
+
+
+PARTE 3: COMPARAÇÃO - CLASSE BANKACCOUNT
+--------------------------------------------------------------------------------
+
+CÓDIGO DA IA (DeepSeek) - Trechos:
+--------------------------------------------------
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+public class BankAccount {
+    private BigDecimal balance;
+    
+    public BankAccount() {
+        this.balance = new BigDecimal("1000.00");
+    }
+    
+    public boolean deposit(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+        balance = balance.add(amount);
+        return true;
+    }
+    
+    public boolean withdraw(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+        if (amount.compareTo(balance) > 0) {
+            return false;
+        }
+        balance = balance.subtract(amount);
+        return true;
+    }
+}
+
+CÓDIGO IMPLEMENTADO:
+--------------------------------------------------
+public class BankAccount {
+    private double balance;
+    
+    public BankAccount() {
+        this.balance = 1000.0;
+    }
+    
+    public boolean deposit(double amount) {
+        if (amount <= 0) {
+            System.out.println("Invalid deposit amount.");
+            return false;
+        }
+        this.balance += amount;
+        return true;
+    }
+}
+
+PROBLEMA GRAVE NO NOSSO CÓDIGO:
+--------------------------------------------------
+0.1 + 0.2 = 0.30000000000000004  // ❌ Erro de precisão com double!
+
+Com BigDecimal:
+new BigDecimal("0.1").add(new BigDecimal("0.2")) = 0.30  // ✅ Correto!
+
+
+PARTE 4: COMPARAÇÃO DE PRÉ E PÓS-CONDIÇÕES NO JAVADOC
+--------------------------------------------------------------------------------
+
+CÓDIGO DA IA (mais formal):
+--------------------------------------------------
+/**
+ * Withdraws money from the bank account.
+ *
+ * @param amount the amount to withdraw (must be positive)
+ * @return true if withdrawal successful, false otherwise
+ *
+ * @pre amount != null
+ * @pre amount.compareTo(BigDecimal.ZERO) > 0
+ * @pre amount.compareTo(balance) <= 0
+ *
+ * @post balance.equals(balance@pre.subtract(amount))
+ * @post balance.compareTo(BigDecimal.ZERO) >= 0
+ *
+ * @throws NullPointerException if amount is null
+ */
+
+NOSSO CÓDIGO (mais descritivo):
+--------------------------------------------------
+/**
+ * Saca um valor positivo da conta bancária, se houver saldo suficiente.
+ * 
+ * @param amount O valor a ser sacado. Deve ser maior que zero
+ *               e menor ou igual ao saldo atual.
+ * 
+ * @pre amount > 0
+ *      amount <= balance
+ * 
+ * @post balance == balance@pre - amount
+ *       balance >= 0 (nunca negativo)
+ * 
+ * @return true se o saque foi realizado com sucesso,
+ *         false caso contrário.
+ */
+
+ANÁLISE DAS DIFERENÇAS:
+--------------------------------------------------
+• IA mais precisa (notação matemática formal)
+• Nosso código mais legível para iniciantes
+• IA inclui @throws (boa prática)
+• Ambos atendem ao requisito de documentar pré/pós-condições
+
+
+PARTE 5: COMPARAÇÃO DE SIDE EFFECTS
+--------------------------------------------------------------------------------
+
+| Critério                       | IA (DeepSeek)                    | Nosso Código                 |
+|--------------------------------|----------------------------------|------------------------------|
+| Impressão dentro da classe     | Métodos de negócio NÃO imprimem  | Métodos imprimem diretamente |
+| Separação de UI                | GameOutput separada              | Tudo no System.out           |
+| Retorno de status              | Optional, enum, objetos          | boolean, void                |
+| Testabilidade                  | Alta (mock de saída)             | Baixa (dependente de console)|
+
+EXEMPLO DE COMO A IA SEPARA A SAÍDA:
+--------------------------------------------------
+// MagicShop não sabe sobre console
+public TransactionResult buyItem(...) {
+    if (success) {
+        return new TransactionResult(true, "Purchased " + itemName);
+    }
+    return new TransactionResult(false, "Insufficient funds");
+}
+
+// Game processa o resultado
+TransactionResult result = magicShop.buyItem(itemName, bankAccount);
+System.out.println(result.getMessage());  // Só aqui tem I/O
+
+NOSSO CÓDIGO (acoplado):
+--------------------------------------------------
+// MagicShop já imprime
+System.out.println("You bought " + itemName);  // ❌ Acoplamento com UI
+
+
+PARTE 6: TABELA RESUMO DE DIFERENÇAS
+--------------------------------------------------------------------------------
+
+| Característica               | IA (DeepSeek)    | Nosso Código    | Vencedor       |
+|------------------------------|------------------|-----------------|----------------|
+| Precisão monetária           | BigDecimal ✅     | double ❌       | IA             |
+| Imutabilidade                | final, imutável  | Mutável         | IA             |
+| Tratamento de erros          | Optional         | boolean         | IA             |
+| Validação de entrada         | Completa         | Básica          | IA             |
+| Legibilidade                 | Boa              | Excelente       | Nosso          |
+| Simplicidade                 | Média            | Alta            | Nosso          |
+| Manutenibilidade             | Alta             | Média           | IA             |
+| Tamanho do código            | ~250 linhas      | ~120 linhas     | Nosso          |
+| JavaDoc formal               | Notação matemática| Descritivo      | IA             |
+| Separação de UI              | Sim              | Não             | IA             |
+| Facilidade para iniciantes   | Difícil          | Fácil           | Nosso          |
+
+
+PARTE 7: Conclusão
+--------------------------------------------------------------------------------
+
+PONTOS FORTES DO CÓDIGO DA IA (DeepSeek):
+--------------------------------------------------
+1. Uso de BigDecimal para dinheiro (evita erros de arredondamento)
+2. Separação de responsabilidades (UI vs lógica de negócio)
+3. Tratamento defensivo (valida tudo que pode dar errado)
+4. Encapsulamento real (listas imutáveis, final)
+5. Notação formal nas pré/pós-condições
+6. Uso de Stream API para código mais expressivo
+7. Constantes para valores mágicos (DEPRECIATION_RATE)
+
+PONTOS FORTES DO NOSSO CÓDIGO:
+--------------------------------------------------
+1. Simplicidade (fácil de entender para quem está aprendendo)
+2. Menos código (120 vs 250 linhas)
+3. Mensagens em português (melhor para os usuários)
+4. Direto ao ponto (sem abstrações desnecessárias)
+5. Mais fácil de modificar rapidamente
+6. Menos dependências de bibliotecas complexas
+
+O QUE PODERÍAMOS MELHORAR NO NOSSO CÓDIGO:
+--------------------------------------------------
+1. ✅ Substituir double por BigDecimal na classe BankAccount
+2. ✅ Tornar playerInventory imutável no getter
+3. ✅ Adicionar validação para strings vazias
+4. ✅ Separar mensagens de erro de sucesso (usar System.err)
+5. ✅ Usar constantes para valores como 0.5 (depreciação)
+6. ✅ Adicionar tratamento para NaN e Infinity
+
+O QUE A IA PODERIA MELHORAR:
+--------------------------------------------------
+1. ❌ Menos complexidade (Optional pode ser overkill para este exercício)
+2. ❌ Remover bordas bonitas (dificultam manutenção)
+3. ❌ Adicionar mensagens em português para melhor UX
+4. ❌ Simplificar a busca de itens (stream pode ser confuso para iniciantes)
+5. ❌ Reduzir o número de linhas (250 é muito para uma classe simples)
+
+
+PARTE 8: EXEMPLO DE EXECUÇÃO COMPARATIVA
+--------------------------------------------------------------------------------
+
+MESMA ENTRADA, RESULTADOS DIFERENTES:
+
+CASO DE TESTE: Compra de Poção Mágica (R$ 50,00) com saldo R$ 1000,00
+
+NOSSO CÓDIGO:
+    > buy Magic Potion
+    You bought Magic Potion for R$ 50,00!
+    > show
+    Balance: R$ 950,00
+    Inventory: Magic Potion
+
+CÓDIGO DA IA:
+    > buy Magic Potion
+    ✓ Purchased Magic Potion for R$ 50.00
+    > show
+    Balance: R$ 950.00
+    Inventory: Magic Potion (Price: R$ 50.00)
+
+DIFERENÇA VISUAL MÍNIMA, mas internamente a IA:
+    • Usa BigDecimal (sem erros de arredondamento)
+    • Armazena o preço junto com o item
+    • Permite vender com depreciação precisa
+
+
+PARTE 10: REFERÊNCIAS 
+--------------------------------------------------------------------------------
+
+IA Utilizada: DeepSeek (https://deepseek.com)
+Versão: Atual - Maio 2026
+
+
+--------------------------------------------------------------------------------
+FIM DA COMPARAÇÃO
+--------------------------------------------------------------------------------
